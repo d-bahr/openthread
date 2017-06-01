@@ -43,7 +43,7 @@
 enum
 {
     kPlatformClock = 32000000,
-    kBaudRate = 115200,
+    kBaudRate = 460800,
     kReceiveBufferSize = 128,
 };
 
