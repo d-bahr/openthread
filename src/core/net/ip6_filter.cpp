@@ -37,14 +37,15 @@
 #include <openthread-config.h>
 #endif
 
+#include "ip6_filter.hpp"
+
 #include <stdio.h>
 
-#include <common/code_utils.hpp>
-#include <net/ip6.hpp>
-#include <net/ip6_filter.hpp>
-#include <net/udp6.hpp>
-#include <net/tcp.hpp>
-#include <thread/mle.hpp>
+#include "common/code_utils.hpp"
+#include "net/ip6.hpp"
+#include "net/tcp.hpp"
+#include "net/udp6.hpp"
+#include "thread/mle.hpp"
 
 namespace ot {
 namespace Ip6 {
@@ -116,9 +117,9 @@ exit:
     return rval;
 }
 
-ThreadError Filter::AddUnsecurePort(uint16_t aPort)
+otError Filter::AddUnsecurePort(uint16_t aPort)
 {
-    ThreadError error = kThreadError_None;
+    otError error = OT_ERROR_NONE;
 
     for (int i = 0; i < kMaxUnsecurePorts; i++)
     {
@@ -137,15 +138,15 @@ ThreadError Filter::AddUnsecurePort(uint16_t aPort)
         }
     }
 
-    ExitNow(error = kThreadError_NoBufs);
+    ExitNow(error = OT_ERROR_NO_BUFS);
 
 exit:
     return error;
 }
 
-ThreadError Filter::RemoveUnsecurePort(uint16_t aPort)
+otError Filter::RemoveUnsecurePort(uint16_t aPort)
 {
-    ThreadError error = kThreadError_None;
+    otError error = OT_ERROR_NONE;
 
     for (int i = 0; i < kMaxUnsecurePorts; i++)
     {
@@ -164,7 +165,7 @@ ThreadError Filter::RemoveUnsecurePort(uint16_t aPort)
         }
     }
 
-    ExitNow(error = kThreadError_NotFound);
+    ExitNow(error = OT_ERROR_NOT_FOUND);
 
 exit:
     return error;

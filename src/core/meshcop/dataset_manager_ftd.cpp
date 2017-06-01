@@ -44,30 +44,30 @@
 
 #include <stdio.h>
 
-#include "openthread/platform/random.h"
-#include "openthread/platform/radio.h"
+#include <openthread/platform/random.h>
+#include <openthread/platform/radio.h>
 
-#include <common/code_utils.hpp>
-#include <common/debug.hpp>
-#include <coap/coap_header.hpp>
-#include <common/debug.hpp>
-#include <common/code_utils.hpp>
-#include <common/logging.hpp>
-#include <common/timer.hpp>
-#include <meshcop/dataset.hpp>
-#include <meshcop/dataset_manager.hpp>
-#include <meshcop/meshcop_tlvs.hpp>
-#include <thread/thread_netif.hpp>
-#include <thread/thread_tlvs.hpp>
-#include <thread/thread_uris.hpp>
-#include <meshcop/leader.hpp>
+#include "common/code_utils.hpp"
+#include "common/debug.hpp"
+#include "coap/coap_header.hpp"
+#include "common/debug.hpp"
+#include "common/code_utils.hpp"
+#include "common/logging.hpp"
+#include "common/timer.hpp"
+#include "meshcop/dataset.hpp"
+#include "meshcop/dataset_manager.hpp"
+#include "meshcop/meshcop_tlvs.hpp"
+#include "meshcop/leader.hpp"
+#include "thread/thread_netif.hpp"
+#include "thread/thread_tlvs.hpp"
+#include "thread/thread_uri_paths.hpp"
 
 namespace ot {
 namespace MeshCoP {
 
 ActiveDataset::ActiveDataset(ThreadNetif &aThreadNetif):
     ActiveDatasetBase(aThreadNetif),
-    mResourceSet(OPENTHREAD_URI_ACTIVE_SET, &ActiveDataset::HandleSet, this)
+    mResourceSet(OT_URI_PATH_ACTIVE_SET, &ActiveDataset::HandleSet, this)
 {
 }
 
@@ -76,12 +76,12 @@ bool ActiveDataset::IsTlvInitialized(Tlv::Type aType)
     return mLocal.Get(aType) != NULL;
 }
 
-ThreadError ActiveDataset::GenerateLocal(void)
+otError ActiveDataset::GenerateLocal(void)
 {
-    ThreadError error = kThreadError_None;
+    otError error = OT_ERROR_NONE;
     otOperationalDataset dataset;
 
-    VerifyOrExit(mNetif.GetMle().IsAttached(), error = kThreadError_InvalidState);
+    VerifyOrExit(mNetif.GetMle().IsAttached(), error = OT_ERROR_INVALID_STATE);
 
     memset(&dataset, 0, sizeof(dataset));
 
@@ -110,7 +110,7 @@ ThreadError ActiveDataset::GenerateLocal(void)
     {
         ChannelMask0Tlv tlv;
         tlv.Init();
-        tlv.SetMask(kPhySupportedChannelMask);
+        tlv.SetMask(OT_RADIO_SUPPORTED_CHANNELS);
         mLocal.Set(tlv);
     }
 
@@ -137,7 +137,7 @@ ThreadError ActiveDataset::GenerateLocal(void)
     {
         NetworkMasterKeyTlv tlv;
         tlv.Init();
-        tlv.SetNetworkMasterKey(mNetif.GetKeyManager().GetMasterKey(NULL));
+        tlv.SetNetworkMasterKey(mNetif.GetKeyManager().GetMasterKey());
         mLocal.Set(tlv);
     }
 
@@ -188,12 +188,12 @@ void ActiveDataset::StartLeader(void)
 
     mLocal.Store();
     mNetwork = mLocal;
-    mNetif.GetCoapServer().AddResource(mResourceSet);
+    mNetif.GetCoap().AddResource(mResourceSet);
 }
 
 void ActiveDataset::StopLeader(void)
 {
-    mNetif.GetCoapServer().RemoveResource(mResourceSet);
+    mNetif.GetCoap().RemoveResource(mResourceSet);
 }
 
 void ActiveDataset::HandleSet(void *aContext, otCoapHeader *aHeader, otMessage *aMessage,
@@ -215,7 +215,7 @@ exit:
 
 PendingDataset::PendingDataset(ThreadNetif &aThreadNetif):
     PendingDatasetBase(aThreadNetif),
-    mResourceSet(OPENTHREAD_URI_PENDING_SET, &PendingDataset::HandleSet, this)
+    mResourceSet(OT_URI_PATH_PENDING_SET, &PendingDataset::HandleSet, this)
 {
 }
 
@@ -226,12 +226,12 @@ void PendingDataset::StartLeader(void)
     mNetwork = mLocal;
     ResetDelayTimer(kFlagNetworkUpdated);
 
-    mNetif.GetCoapServer().AddResource(mResourceSet);
+    mNetif.GetCoap().AddResource(mResourceSet);
 }
 
 void PendingDataset::StopLeader(void)
 {
-    mNetif.GetCoapServer().RemoveResource(mResourceSet);
+    mNetif.GetCoap().RemoveResource(mResourceSet);
 }
 
 void PendingDataset::HandleSet(void *aContext, otCoapHeader *aHeader, otMessage *aMessage,

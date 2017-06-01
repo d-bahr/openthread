@@ -39,12 +39,13 @@
 #include <openthread-config.h>
 #endif
 
-#include <common/code_utils.hpp>
-#include <common/debug.hpp>
-#include <common/logging.hpp>
-#include <thread/mesh_forwarder.hpp>
-#include <thread/src_match_controller.hpp>
-#include <thread/thread_netif.hpp>
+#include "src_match_controller.hpp"
+
+#include "common/code_utils.hpp"
+#include "common/debug.hpp"
+#include "common/logging.hpp"
+#include "thread/mesh_forwarder.hpp"
+#include "thread/thread_netif.hpp"
 
 namespace ot {
 
@@ -140,7 +141,7 @@ void SourceMatchController::AddEntry(Child &aChild)
     }
     else
     {
-        VerifyOrExit(AddAddress(aChild) == kThreadError_None, Enable(false));
+        VerifyOrExit(AddAddress(aChild) == OT_ERROR_NONE, Enable(false));
         aChild.SetIndirectSourceMatchPending(false);
     }
 
@@ -148,9 +149,9 @@ exit:
     return;
 }
 
-ThreadError SourceMatchController::AddAddress(const Child &aChild)
+otError SourceMatchController::AddAddress(const Child &aChild)
 {
-    ThreadError error = kThreadError_None;
+    otError error = OT_ERROR_NONE;
 
     if (aChild.IsIndirectSourceMatchShort())
     {
@@ -180,7 +181,7 @@ ThreadError SourceMatchController::AddAddress(const Child &aChild)
 
 void SourceMatchController::ClearEntry(Child &aChild)
 {
-    ThreadError error = kThreadError_None;
+    otError error = OT_ERROR_NONE;
 
     if (aChild.IsIndirectSourceMatchPending())
     {
@@ -224,9 +225,9 @@ exit:
     return;
 }
 
-ThreadError SourceMatchController::AddPendingEntries(void)
+otError SourceMatchController::AddPendingEntries(void)
 {
-    ThreadError error = kThreadError_None;
+    otError error = OT_ERROR_NONE;
     uint8_t numChildren;
     Child *child;
 
@@ -236,7 +237,7 @@ ThreadError SourceMatchController::AddPendingEntries(void)
     {
         if (child->IsStateValidOrRestoring() && child->IsIndirectSourceMatchPending())
         {
-            SuccessOrExit(AddAddress(*child));
+            SuccessOrExit(error = AddAddress(*child));
             child->SetIndirectSourceMatchPending(false);
         }
     }
